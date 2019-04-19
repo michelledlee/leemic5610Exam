@@ -10,6 +10,7 @@ const customStyles = {
     "right": "auto",
     "bottom": "auto",
     "overflowY": "scroll",
+    "maxHeight": "90%",
     "marginRight": "-50%",
     "transform": "translate(-50%, -50%)"
   }
@@ -23,9 +24,9 @@ export default class App extends Component {
       // comments: [],
       // titles: [],
       modalIsOpen: false,
-      modalEquipIsOpen: false,
+      modalHistoryIsOpen: false,
       wikipage: [],
-      wikititle: [],
+      wikititle: "Start Searching!",
       wikilinks: [],
       message: "",
       previousSearch: []
@@ -36,6 +37,9 @@ export default class App extends Component {
     this.afterOpenModal = this.afterOpenModal.bind(this);
     this.closeModal = this.closeModal.bind(this);
 
+    this.openHistoryModal = this.openHistoryModal.bind(this);
+    this.afterOpenHistoryModal = this.afterOpenHistoryModal.bind(this);
+    this.closeHistoryModal = this.closeHistoryModal.bind(this);
   }
 
   openModal() {
@@ -50,6 +54,21 @@ export default class App extends Component {
   closeModal() {
     this.setState({ modalIsOpen: false });
   }
+
+  openHistoryModal() {
+    this.setState({ modalHistoryIsOpen: true });
+  }
+
+  afterOpenHistoryModal() {
+    // references are now sync'd and can be accessed.
+    this.subtitle.style.color = "#f00";
+  }
+
+  closeHistoryModal() {
+    this.setState({ modalHistoryIsOpen: false });
+  }
+
+
   // renders comments given a title of a post'
   renderLinks() {
     return this.state.wikilinks.map((p, i) => 
@@ -69,16 +88,23 @@ export default class App extends Component {
       <div key={i++}>
         <button
         type="submit"
-        onClick={this.onSubmit(p["*"])}
+        onClick={()=> this.onSubmit(p)}
         >
-        {p["*"]}
+        {p}
         </button>
       </div>
       );
   }
 
   onSubmit(search) {
-    this.state.previousSearch.concat(search);
+    console.log(this.state.previousSearch);
+    let list = this.state.previousSearch;
+    list.push(search);
+    // this.state.previousSearch.concat(search);
+    this.setState({
+      previousSearch: list
+    });
+
     Meteor.call("getPostData", search, (err, res) => {
         if (err) {
           alert("There was error inserting check the console");
@@ -195,7 +221,8 @@ export default class App extends Component {
       <div>
         <div>
           {this.state.err ? <div> ERROR{this.state.err}</div> : " "}
-          <h1>Wikipedia - Search by Keyword</h1>
+          <h1>WikiSearch - {this.state.wikititle}</h1>
+          <h6>Start searching by entering a keyword and hitting your enter key!</h6>
           <input
             className="fixlabel form-control"
             type="text"
@@ -205,6 +232,9 @@ export default class App extends Component {
             onChange={this.onChange.bind(this)}
             onKeyPress={this.onKey.bind(this)}
           />
+          <b>Links to other pages from this page:</b>{" "}
+          <button onClick={this.openModal}>Links</button>
+          <br />
           <Modal
               isOpen={this.state.modalIsOpen}
               onAfterOpen={this.afterOpenModal}
@@ -214,17 +244,33 @@ export default class App extends Component {
               ariaHideApp={false}
             >
               <h2 ref={subtitle => (this.subtitle = subtitle)}>
-                Hello
+                Links to Other Pages
               </h2>
               <button onClick={this.closeModal}>close</button>
-              <div>I am a modal</div>
+              <div>Links from this Page</div>
               {this.renderLinks()}
             </Modal>
-          {this.renderLinks()}
-          {this.renderPage()}
 
-          <h1>Previous History</h1>
-          {this.renderHistory()}
+
+          <b>View your previous browsing history:</b>{" "}
+          <button onClick={this.openHistoryModal}>History</button>
+          <br />
+          <Modal
+              isOpen={this.state.modalHistoryIsOpen}
+              onAfterOpen={this.afterOpenHistoryModal}
+              onRequestClose={this.closeHistoryModal}
+              style={customStyles}
+              contentLabel="Example Modal"
+              ariaHideApp={false}
+            >
+              <h2 ref={subtitle => (this.subtitle = subtitle)}>
+                Links to Other Pages
+              </h2>
+              <button onClick={this.closeHistoryModal}>close</button>
+              <div>Browsing History</div>
+              {this.renderHistory()}
+            </Modal>
+          {this.renderPage()}
 
         </div>
       </div>
