@@ -88,7 +88,7 @@ export default class App extends Component {
       <div key={i++}>
         <button
         type="submit"
-        onClick={()=> this.onSubmit(p)}
+        onClick={()=> this.onSubmit2(p)}
         >
         {p}
         </button>
@@ -124,6 +124,33 @@ export default class App extends Component {
       });
   }
 
+  onSubmit2(search) {
+    let list = [];
+    list.push(search);
+    // this.state.previousSearch.concat(search);
+    this.setState({
+      previousSearch: list
+    });
+
+    Meteor.call("getPostData", search, (err, res) => {
+        if (err) {
+          alert("There was error inserting check the console");
+          // console.log(err);
+          return;
+        } else {
+          console.log(res);
+          this.setState({
+            wikipage: res.text["*"],
+            wikititle: res.title,
+            wikilinks: res.links
+            // store links (array)
+            // store title
+          });
+          // console.log(this.state.wikipage);
+        }
+      });
+  }
+
   onChange(evt) {
     this.setState({
       message: evt.target.value
@@ -132,6 +159,14 @@ export default class App extends Component {
 
   onKey(evt) {
     if (evt.key === "Enter") {
+      let trimQuery = this.state.message.trim();
+      let parsedSearch = this.state.message.replace(" ", "_");
+      let list = this.state.previousSearch;
+    list.push(parsedSearch);
+    // this.state.previousSearch.concat(search);
+    this.setState({
+      previousSearch: list
+    });
       Meteor.call("getPostData", this.state.message, (err, res) => {
         if (err) {
           alert("There was error inserting check the console");
@@ -219,7 +254,7 @@ export default class App extends Component {
   render() {
     return (
       <div>
-        <div>
+        <div className="col-lg-12" role="mail">
           {this.state.err ? <div> ERROR{this.state.err}</div> : " "}
           <h1>WikiSearch - {this.state.wikititle}</h1>
           <h6>Start searching by entering a keyword and hitting your enter key!</h6>
@@ -233,7 +268,9 @@ export default class App extends Component {
             onKeyPress={this.onKey.bind(this)}
           />
           <b>Links to other pages from this page:</b>{" "}
-          <button onClick={this.openModal}>Links</button>
+          <button 
+          className="btn btn-xl btn-dark text-uppercase"
+          onClick={this.openModal}>Links</button>
           <br />
           <Modal
               isOpen={this.state.modalIsOpen}
@@ -246,14 +283,18 @@ export default class App extends Component {
               <h2 ref={subtitle => (this.subtitle = subtitle)}>
                 Links to Other Pages
               </h2>
-              <button onClick={this.closeModal}>close</button>
+              <button 
+              className="btn btn-xl btn-dark text-uppercase"
+              onClick={this.closeModal}>close</button>
               <div>Links from this Page</div>
               {this.renderLinks()}
             </Modal>
 
 
           <b>View your previous browsing history:</b>{" "}
-          <button onClick={this.openHistoryModal}>History</button>
+          <button 
+          className="btn btn-xl btn-dark text-uppercase"
+          onClick={this.openHistoryModal}>History</button>
           <br />
           <Modal
               isOpen={this.state.modalHistoryIsOpen}
@@ -264,7 +305,7 @@ export default class App extends Component {
               ariaHideApp={false}
             >
               <h2 ref={subtitle => (this.subtitle = subtitle)}>
-                Links to Other Pages
+                Browsing History Links
               </h2>
               <button onClick={this.closeHistoryModal}>close</button>
               <div>Browsing History</div>
