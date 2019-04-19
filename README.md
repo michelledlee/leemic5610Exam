@@ -4,6 +4,9 @@
 Final Exam Wikipedia Search
 (30 minute (1 hour) extension option)
 
+## Creative Aspect
+In order to make the user experience more enjoyable, I decided to hide the links in a modal window so that they were not always taking up space on the page. I was hoping this would make the design of the page cleaner.
+
 ## Technologies  
 + HTML5/CSS
 + Bootstrap
